@@ -1,0 +1,98 @@
+### Variables
+@baseUrl = http://localhost:3000
+@academyId = PIp0OwatTywTYtbwgccpkmo51HuXoqFq
+
+###############################################
+# INSTRUCTORES - CRUD
+###############################################
+# Prefix: /api/academies/:academyId/instructors
+# Requiere: sesion activa + pertenecer a la academia
+# Primero haz login en auth.http
+###############################################
+
+### ========================================
+### LISTAR
+### ========================================
+
+### Listar instructores (pagina 1, 20 por pagina)
+GET {{baseUrl}}/api/academies/{{academyId}}/instructors?page=1&pageSize=20
+
+### Listar con busqueda por nombre
+GET {{baseUrl}}/api/academies/{{academyId}}/instructors?search=maria&page=1&pageSize=10
+
+### ========================================
+### CREAR
+### ========================================
+
+### Crear instructor completo
+# @name createInstructor
+POST {{baseUrl}}/api/academies/{{academyId}}/instructors
+Content-Type: application/json
+
+{
+  "name": "Emir Herrera",
+  "email": "eherrera@salsamia.com",
+  "phone": "9992333333",
+  "specialization": "Salsa y Bachata"
+}
+
+### Crear instructor solo con campos requeridos
+POST {{baseUrl}}/api/academies/{{academyId}}/instructors
+Content-Type: application/json
+
+{
+  "name": "Carlos Lopez",
+  "email": "carlos.lopez@dance.com"
+}
+
+### Crear instructor - sin nombre (debe fallar)
+POST {{baseUrl}}/api/academies/{{academyId}}/instructors
+Content-Type: application/json
+
+{
+  "email": "sin.nombre@dance.com"
+}
+
+### ========================================
+### OBTENER POR ID
+### ========================================
+
+@instructorId = REPLACE_WITH_INSTRUCTOR_ID
+
+### Obtener instructor por ID
+GET {{baseUrl}}/api/academies/{{academyId}}/instructors/{{instructorId}}
+
+### ========================================
+### ACTUALIZAR
+### ========================================
+
+### Actualizar instructor (campos parciales)
+PUT {{baseUrl}}/api/academies/{{academyId}}/instructors/{{instructorId}}
+Content-Type: application/json
+
+{
+  "phone": "+52 55 9876 5432",
+  "specialization": "Salsa, Bachata y Kizomba"
+}
+
+### Desactivar instructor
+PUT {{baseUrl}}/api/academies/{{academyId}}/instructors/{{instructorId}}
+Content-Type: application/json
+
+{
+  "is_active": false
+}
+
+### ========================================
+### ELIMINAR
+### ========================================
+
+### Eliminar instructor
+DELETE {{baseUrl}}/api/academies/{{academyId}}/instructors/{{instructorId}}
+
+### ========================================
+### HISTORIAL DE GRUPOS
+### ========================================
+
+### Grupos del instructor
+GET {{baseUrl}}/api/academies/{{academyId}}/instructors/{{instructorId}}/groups

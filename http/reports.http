@@ -1,0 +1,48 @@
+### Variables
+@baseUrl = http://localhost:3000
+@academyId = PIp0OwatTywTYtbwgccpkmo51HuXoqFq
+
+###############################################
+# REPORTES - Dashboard, Asistencia, Ingresos
+###############################################
+# Prefix: /api/academies/:academyId/reports
+# Requiere: sesion activa + pertenecer a la academia
+# Primero haz login en auth.http
+###############################################
+
+### ========================================
+### DASHBOARD - KPIs principales
+### ========================================
+
+### Obtener dashboard con metricas generales
+GET {{baseUrl}}/api/academies/{{academyId}}/reports/dashboard
+
+### ========================================
+### REPORTE DE ASISTENCIA
+### ========================================
+
+### Reporte de asistencia general (sin filtros)
+GET {{baseUrl}}/api/academies/{{academyId}}/reports/attendance
+
+### Reporte de asistencia en rango de fechas
+GET {{baseUrl}}/api/academies/{{academyId}}/reports/attendance?from=2026-01-01&to=2026-02-28
+
+### Reporte de asistencia de un grupo especifico
+@groupId = REPLACE_WITH_GROUP_ID
+GET {{baseUrl}}/api/academies/{{academyId}}/reports/attendance?group_id={{groupId}}
+
+### Reporte de asistencia - grupo + rango de fechas
+GET {{baseUrl}}/api/academies/{{academyId}}/reports/attendance?from=2026-02-01&to=2026-02-28&group_id={{groupId}}
+
+### ========================================
+### REPORTE DE INGRESOS
+### ========================================
+
+### Reporte de ingresos general (sin filtros)
+GET {{baseUrl}}/api/academies/{{academyId}}/reports/revenue
+
+### Reporte de ingresos en rango de fechas
+GET {{baseUrl}}/api/academies/{{academyId}}/reports/revenue?from=2026-01-01&to=2026-02-28
+
+### Reporte de ingresos - solo febrero 2026
+GET {{baseUrl}}/api/academies/{{academyId}}/reports/revenue?from=2026-02-01&to=2026-02-28

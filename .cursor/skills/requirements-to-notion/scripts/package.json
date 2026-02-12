@@ -1,0 +1,15 @@
+{
+  "name": "requirements-to-notion",
+  "version": "1.0.0",
+  "description": "Convierte requerimientos MD a épicas/historias en Notion",
+  "type": "module",
+  "scripts": {
+    "validate": "node validate_requirements.js",
+    "test-connection": "node notion_client.js",
+    "create": "node create_stories.js"
+  },
+  "dependencies": {
+    "@notionhq/client": "^2.2.14",
+    "dotenv": "^16.3.1"
+  }
+}

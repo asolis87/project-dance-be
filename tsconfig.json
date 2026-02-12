@@ -1,24 +1,18 @@
 {
     "compilerOptions": {
-        "target": "es2020", /* Versión moderna de JS */
-        "module": "commonjs", /* Fastify funciona nativamente bien con CommonJS */
+        "target": "ES2022",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
         "lib": [
-            "es2020"
+            "ES2022"
         ],
-        "outDir": "./dist", /* Donde se guardará el código compilado */
-        "rootDir": "./src", /* Donde está tu código fuente */
-        "strict": true, /* Obliga a tipar todo (Robustez) */
-        "esModuleInterop": true, /* Permite importar módulos CommonJS como ES6 */
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "strict": true,
+        "esModuleInterop": true,
         "skipLibCheck": true,
-        "forceConsistentCasingInFileNames": true,
-        "typeRoots": [
-            "./node_modules/@types",
-            "./src/types"
-        ]
+        "forceConsistentCasingInFileNames": true
     },
-    "files": [
-        "src/types/index.d.ts"
-    ],
     "include": [
         "src/**/*"
     ],

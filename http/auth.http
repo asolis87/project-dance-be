@@ -1,0 +1,217 @@
+### Variables
+@baseUrl = http://localhost:3000
+@origin = http://localhost:3000
+
+###############################################
+# AUTH - Better Auth + Ruta custom
+###############################################
+# Better Auth maneja sesiones via cookies.
+# REST Client guarda y envia cookies automaticamente.
+# Los POST requieren header Origin (proteccion CSRF).
+###############################################
+
+### ========================================
+### REGISTRO
+### ========================================
+
+### Registrar nuevo usuario
+# @name signup
+POST {{baseUrl}}/api/auth/sign-up/email
+Content-Type: application/json
+Origin: {{origin}}
+
+{
+  "name": "Admin Academia",
+  "email": "admin@danceacademy.com",
+  "password": "password1234"
+}
+
+### Registro con password corto (debe fallar - min 8 chars)
+POST {{baseUrl}}/api/auth/sign-up/email
+Content-Type: application/json
+Origin: {{origin}}
+
+{
+  "name": "Bad Pass",
+  "email": "bad@example.com",
+  "password": "123"
+}
+
+### Registro con email duplicado (debe fallar)
+POST {{baseUrl}}/api/auth/sign-up/email
+Content-Type: application/json
+Origin: {{origin}}
+
+{
+  "name": "Duplicado",
+  "email": "admin@danceacademy.com",
+  "password": "password1234"
+}
+
+### ========================================
+### LOGIN
+### ========================================
+
+### Login con credenciales correctas
+# @name login
+POST {{baseUrl}}/api/auth/sign-in/email
+Content-Type: application/json
+Origin: {{origin}}
+
+{
+  "email": "asolisaranda.28@gmail.com",
+  "password": "Dance2026!"
+}
+
+### Login con password incorrecto (debe fallar)
+POST {{baseUrl}}/api/auth/sign-in/email
+Content-Type: application/json
+Origin: {{origin}}
+
+{
+  "email": "admin@danceacademy.com",
+  "password": "wrongpassword"
+}
+
+### Login con email inexistente (debe fallar)
+POST {{baseUrl}}/api/auth/sign-in/email
+Content-Type: application/json
+Origin: {{origin}}
+
+{
+  "email": "noexiste@example.com",
+  "password": "password1234"
+}
+
+### ========================================
+### SESION
+### ========================================
+
+### Obtener sesion actual (Better Auth)
+GET {{baseUrl}}/api/auth/get-session
+
+### Obtener info del usuario autenticado (ruta custom protegida)
+GET {{baseUrl}}/auth/me
+
+### ========================================
+### LOGOUT
+### ========================================
+
+### Cerrar sesion
+POST {{baseUrl}}/api/auth/sign-out
+Origin: {{origin}}
+
+### Verificar sesion invalidada (debe retornar 401)
+GET {{baseUrl}}/auth/me
+
+### ========================================
+### CAMBIAR PASSWORD
+### ========================================
+
+### Cambiar password (requiere sesion activa)
+POST {{baseUrl}}/api/auth/change-password
+Content-Type: application/json
+Origin: {{origin}}
+
+{
+  "currentPassword": "password1234",
+  "newPassword": "newpassword5678",
+  "revokeOtherSessions": true
+}
+
+### ========================================
+### ACADEMIAS (Organizaciones de Better Auth)
+### ========================================
+# En este proyecto, cada "academia" es una Organization
+# de Better Auth. Necesitas crear una para poder usar
+# los demas modulos (instructores, alumnos, grupos, etc.)
+#
+# FLUJO:
+# 1. Haz sign-up o sign-in (arriba)
+# 2. Crea una academia (abajo)
+# 3. Copia el ID de la respuesta
+# 4. Usa ese ID como @academyId en los demas archivos .http
+
+### Crear una academia (organizacion)
+# @name createAcademy
+POST {{baseUrl}}/api/auth/organization/create
+Content-Type: application/json
+Origin: {{origin}}
+
+{
+  "name": "Salsa Mia Dance & Fitness",
+  "slug": "salsa-mia-dance-fitness"
+}
+
+### Listar mis academias (organizaciones del usuario actual)
+# @name listAcademies
+GET {{baseUrl}}/api/auth/organization/list
+
+### Obtener academia completa por ID
+# Usa el ID que obtuviste al crear la academia
+@academyId = REPLACE_WITH_ACADEMY_ID
+GET {{baseUrl}}/api/auth/organization/get-full?organizationId={{academyId}}
+
+### Establecer academia activa
+POST {{baseUrl}}/api/auth/organization/set-active
+Content-Type: application/json
+Origin: {{origin}}
+
+{
+  "organizationId": "{{academyId}}"
+}
+
+### ========================================
+### INVITAR MIEMBROS A LA ACADEMIA
+### ========================================
+
+### Invitar usuario a la academia (como admin)
+POST {{baseUrl}}/api/auth/organization/invite-member
+Content-Type: application/json
+Origin: {{origin}}
+
+{
+  "organizationId": "{{academyId}}",
+  "email": "instructor@danceacademy.com",
+  "role": "admin"
+}
+
+### Invitar usuario como miembro basico
+POST {{baseUrl}}/api/auth/organization/invite-member
+Content-Type: application/json
+Origin: {{origin}}
+
+{
+  "organizationId": "{{academyId}}",
+  "email": "recepcion@danceacademy.com",
+  "role": "member"
+}
+
+### Listar miembros de la academia
+GET {{baseUrl}}/api/auth/organization/get-full?organizationId={{academyId}}
+
+### ========================================
+### FORGOT PASSWORD (Restablecer contraseña)
+### ========================================
+
+### Solicitar restablecimiento de contraseña
+### Envía un email con el enlace para resetear
+POST {{baseUrl}}/api/auth/forget-password
+Content-Type: application/json
+Origin: {{origin}}
+
+{
+  "email": "admin@danceacademy.com",
+  "redirectTo": "http://localhost:5173/reset-password"
+}
+
+### Restablecer contraseña con token
+### El token se obtiene del enlace enviado por email
+POST {{baseUrl}}/api/auth/reset-password
+Content-Type: application/json
+Origin: {{origin}}
+
+{
+  "token": "REPLACE_WITH_RESET_TOKEN",
+  "newPassword": "nuevaPassword1234"
+}

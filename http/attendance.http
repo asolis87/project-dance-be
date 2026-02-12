@@ -1,0 +1,66 @@
+### Variables
+@baseUrl = http://localhost:3000
+@academyId = PIp0OwatTywTYtbwgccpkmo51HuXoqFq
+
+###############################################
+# ASISTENCIA - Registro y Historial
+###############################################
+# Prefix: /api/academies/:academyId/attendance
+# Requiere: sesion activa + pertenecer a la academia
+# Primero haz login en auth.http
+###############################################
+
+@groupId = d2156d8b-27b2-400a-ad24-367c0b428df9
+@studentId = c89f49f9-8ea6-4416-a6c3-cefc2184c4ab
+
+### ========================================
+### REGISTRAR ASISTENCIA POR QR
+### ========================================
+
+### Registrar asistencia escaneando QR del alumno
+POST {{baseUrl}}/api/academies/{{academyId}}/attendance/qr
+Content-Type: application/json
+
+{
+  "qr_data": "{\"affiliationNumber\":\"AF-001\",\"studentId\":\"c89f49f9-8ea6-4416-a6c3-cefc2184c4ab\",\"organizationId\":\"PIp0OwatTywTYtbwgccpkmo51HuXoqFq\"}",
+  "group_id": "{{groupId}}"
+}
+
+### ========================================
+### REGISTRAR ASISTENCIA POR NUMERO
+### ========================================
+
+### Registrar asistencia por numero de afiliacion
+POST {{baseUrl}}/api/academies/{{academyId}}/attendance/number
+Content-Type: application/json
+
+{
+  "affiliation_number": "AF-001",
+  "group_id": "{{groupId}}"
+}
+
+### ========================================
+### REGISTRAR ASISTENCIA MANUAL
+### ========================================
+
+### Registrar asistencia seleccionando alumno manualmente
+POST {{baseUrl}}/api/academies/{{academyId}}/attendance/manual
+Content-Type: application/json
+
+{
+  "student_id": "{{studentId}}",
+  "group_id": "{{groupId}}"
+}
+
+### ========================================
+### HISTORIAL DE ASISTENCIA POR GRUPO
+### ========================================
+
+### Historial completo del grupo
+GET {{baseUrl}}/api/academies/{{academyId}}/attendance/groups/{{groupId}}
+
+### Historial del grupo en rango de fechas
+GET {{baseUrl}}/api/academies/{{academyId}}/attendance/groups/{{groupId}}?from=2026-01-01&to=2026-02-28
+
+### Historial del grupo - solo febrero 2026
+GET {{baseUrl}}/api/academies/{{academyId}}/attendance/groups/{{groupId}}?from=2026-02-01&to=2026-02-28

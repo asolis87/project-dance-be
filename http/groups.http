@@ -1,0 +1,113 @@
+### Variables
+@baseUrl = http://localhost:3000
+@academyId = PIp0OwatTywTYtbwgccpkmo51HuXoqFq
+
+###############################################
+# GRUPOS - CRUD + Inscripciones
+###############################################
+# Prefix: /api/academies/:academyId/groups
+# Requiere: sesion activa + pertenecer a la academia
+# Primero haz login en auth.http
+###############################################
+
+### ========================================
+### LISTAR
+### ========================================
+
+### Listar grupos (pagina 1)
+GET {{baseUrl}}/api/academies/{{academyId}}/groups?page=1&pageSize=20
+
+### Buscar grupos por nombre
+GET {{baseUrl}}/api/academies/{{academyId}}/groups?search=iniciados&page=1&pageSize=10
+
+### ========================================
+### CREAR
+### ========================================
+
+@instructorId = 442b2f07-2bf4-4ba3-bc70-00334d0e9435
+
+### Crear grupo completo
+# @name createGroup
+POST {{baseUrl}}/api/academies/{{academyId}}/groups
+Content-Type: application/json
+
+{
+  "name": "Salsa Iniciados 1 - Lunes y Miercoles",
+  "instructor_id": "{{instructorId}}",
+  "description": "Clase de salsa para principiantes",
+  "schedule": "Lunes y Miercoles 18:00 - 19:30",
+  "capacity": 25
+}
+
+### Crear grupo solo con campos requeridos
+POST {{baseUrl}}/api/academies/{{academyId}}/groups
+Content-Type: application/json
+
+{
+  "name": "Bachata Intermedio",
+  "instructor_id": "{{instructorId}}",
+  "capacity": 20
+}
+
+### Crear grupo sin capacidad (debe fallar)
+POST {{baseUrl}}/api/academies/{{academyId}}/groups
+Content-Type: application/json
+
+{
+  "name": "Sin Capacidad",
+  "instructor_id": "{{instructorId}}"
+}
+
+### ========================================
+### OBTENER POR ID (incluye alumnos inscritos)
+### ========================================
+
+@groupId = d2156d8b-27b2-400a-ad24-367c0b428df9
+
+### Obtener grupo con sus alumnos
+GET {{baseUrl}}/api/academies/{{academyId}}/groups/{{groupId}}
+
+### ========================================
+### ACTUALIZAR
+### ========================================
+
+### Actualizar grupo (campos parciales)
+PUT {{baseUrl}}/api/academies/{{academyId}}/groups/{{groupId}}
+Content-Type: application/json
+
+{
+  "schedule": "Martes y Jueves 19:00 - 20:30",
+  "capacity": 30
+}
+
+### Desactivar grupo
+PUT {{baseUrl}}/api/academies/{{academyId}}/groups/{{groupId}}
+Content-Type: application/json
+
+{
+  "is_active": false
+}
+
+### ========================================
+### ELIMINAR
+### ========================================
+
+### Eliminar grupo
+DELETE {{baseUrl}}/api/academies/{{academyId}}/groups/{{groupId}}
+
+### ========================================
+### INSCRIPCIONES
+### ========================================
+
+@studentId = c89f49f9-8ea6-4416-a6c3-cefc2184c4ab
+
+### Inscribir alumno al grupo
+POST {{baseUrl}}/api/academies/{{academyId}}/groups/{{groupId}}/enroll
+Content-Type: application/json
+
+{
+  "student_id": "{{studentId}}"
+}
+
+### Desinscribir alumno del grupo
+DELETE {{baseUrl}}/api/academies/{{academyId}}/groups/{{groupId}}/enroll/{{studentId}}

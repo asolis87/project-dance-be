@@ -1,0 +1,113 @@
+### Variables
+@baseUrl = http://localhost:3000
+@academyId = PIp0OwatTywTYtbwgccpkmo51HuXoqFq
+
+###############################################
+# ALUMNOS - CRUD + QR
+###############################################
+# Prefix: /api/academies/:academyId/students
+# Requiere: sesion activa + pertenecer a la academia
+# Primero haz login en auth.http
+###############################################
+
+### ========================================
+### LISTAR
+### ========================================
+
+### Listar alumnos (pagina 1, 20 por pagina)
+GET {{baseUrl}}/api/academies/{{academyId}}/students?page=1&pageSize=20
+
+### Listar con busqueda por nombre
+GET {{baseUrl}}/api/academies/{{academyId}}/students?search=juan&page=1&pageSize=10
+
+### Pagina 2
+GET {{baseUrl}}/api/academies/{{academyId}}/students?page=2&pageSize=5
+
+### ========================================
+### CREAR
+### ========================================
+
+### Crear alumno completo
+# @name createStudent
+POST {{baseUrl}}/api/academies/{{academyId}}/students
+Content-Type: application/json
+
+{
+  "name": "Alvaro Solis",
+  "email": "alvaro.solis@email.com",
+  "phone": "9992333450"
+}
+
+### Crear alumno solo con campos requeridos
+POST {{baseUrl}}/api/academies/{{academyId}}/students
+Content-Type: application/json
+
+{
+  "name": "Ana Martinez",
+  "email": "ana.martinez@email.com"
+}
+
+### Crear alumno - sin email (debe fallar)
+POST {{baseUrl}}/api/academies/{{academyId}}/students
+Content-Type: application/json
+
+{
+  "name": "Sin Email"
+}
+
+### ========================================
+### OBTENER POR ID
+### ========================================
+
+@studentId = c89f49f9-8ea6-4416-a6c3-cefc2184c4ab
+
+### Obtener alumno por ID
+GET {{baseUrl}}/api/academies/{{academyId}}/students/{{studentId}}
+
+### ========================================
+### ACTUALIZAR
+### ========================================
+
+### Actualizar alumno (campos parciales)
+PUT {{baseUrl}}/api/academies/{{academyId}}/students/{{studentId}}
+Content-Type: application/json
+
+{
+  "phone": "+52 55 3333 4444"
+}
+
+### Desactivar alumno
+PUT {{baseUrl}}/api/academies/{{academyId}}/students/{{studentId}}
+Content-Type: application/json
+
+{
+  "is_active": false
+}
+
+### ========================================
+### ELIMINAR
+### ========================================
+
+### Eliminar alumno
+DELETE {{baseUrl}}/api/academies/{{academyId}}/students/{{studentId}}
+
+### ========================================
+### HISTORIAL DE GRUPOS DEL ALUMNO
+### ========================================
+
+### Grupos en los que esta/estuvo inscrito
+GET {{baseUrl}}/api/academies/{{academyId}}/students/{{studentId}}/groups
+
+### ========================================
+### HISTORIAL DE PAGOS DEL ALUMNO
+### ========================================
+
+### Pagos del alumno
+GET {{baseUrl}}/api/academies/{{academyId}}/students/{{studentId}}/payments
+
+### ========================================
+### CODIGO QR
+### ========================================
+
+### Obtener o generar QR del alumno
+GET {{baseUrl}}/api/academies/{{academyId}}/students/{{studentId}}/qr

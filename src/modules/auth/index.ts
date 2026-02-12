@@ -1,13 +1,4 @@
-import { FastifyInstance } from "fastify";
-import fp from 'fastify-plugin';
-import { authRoutes } from './auth.routes';
-
-async function authModule(server: FastifyInstance) {
-    // Aquí registramos las rutas del módulo
-    // 'prefix' hace que todas las rutas de authRoutes empiecen con /auth
-    server.register(authRoutes, { prefix: '/auth' });
-
-    console.log('Auth module registered');
-}
-
-export default fp(authModule);
+// Este módulo ahora solo exporta las rutas custom.
+// La autenticación principal (sign-up, sign-in, sign-out, session)
+// la maneja Better Auth automáticamente en /api/auth/*
+export { authRoutes } from './auth.routes';

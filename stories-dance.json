@@ -1,0 +1,327 @@
+{
+  "project": "Dance - SaaS Gestión de Academias de Danza",
+  "epics": [
+    {
+      "title": "Módulo de Autenticación",
+      "module": "Autenticación",
+      "description": "Módulo encargado de la autenticación, autorización y manejo de usuarios del sistema.",
+      "stories": [
+        {
+          "title": "Login con credenciales",
+          "userStory": "**Como** usuario registrado\n**Quiero** iniciar sesión con email y contraseña\n**Para** acceder a las funcionalidades del sistema",
+          "acceptanceCriteria": "**Scenario:** Login exitoso con credenciales\n- **Given** soy un usuario registrado con email verificado\n- **When** ingreso mi email y contraseña correctos\n- **Then** accedo al dashboard principal\n- **And** veo mi nombre de usuario en el header\n\n**Scenario:** Login con credenciales inválidas\n- **Given** estoy en la página de login\n- **When** ingreso credenciales incorrectas\n- **Then** veo mensaje de error \"Credenciales inválidas\"\n- **And** permanezco en la página de login",
+          "estimate": "S",
+          "priority": "Alta"
+        },
+        {
+          "title": "Login con Google",
+          "userStory": "**Como** usuario\n**Quiero** iniciar sesión con mi cuenta de Google\n**Para** acceder más rápido sin recordar contraseñas",
+          "acceptanceCriteria": "**Scenario:** Login exitoso con Google\n- **Given** tengo una cuenta de Google válida\n- **When** hago click en \"Iniciar con Google\"\n- **Then** se abre popup de autenticación de Google\n- **And** al autorizar, accedo al dashboard\n\n**Scenario:** Primer login con Google (registro automático)\n- **Given** no tengo cuenta en el sistema\n- **When** inicio sesión con Google por primera vez\n- **Then** se crea mi cuenta automáticamente\n- **And** accedo al dashboard",
+          "estimate": "M",
+          "priority": "Alta"
+        },
+        {
+          "title": "Registro de usuario estándar",
+          "userStory": "**Como** visitante\n**Quiero** registrarme con email y contraseña\n**Para** crear una cuenta en el sistema",
+          "acceptanceCriteria": "**Scenario:** Registro exitoso\n- **Given** estoy en la página de registro\n- **When** completo el formulario con datos válidos\n- **Then** recibo un email de verificación\n- **And** veo mensaje \"Revisa tu correo para verificar tu cuenta\"\n\n**Scenario:** Validación de email duplicado\n- **Given** existe un usuario con email \"test@email.com\"\n- **When** intento registrarme con ese mismo email\n- **Then** veo mensaje \"Este email ya está registrado\"\n\n**Scenario:** Validación de contraseña\n- **Given** estoy en el formulario de registro\n- **When** ingreso contraseña menor a 8 caracteres\n- **Then** veo mensaje \"La contraseña debe tener al menos 8 caracteres\"",
+          "estimate": "M",
+          "priority": "Alta"
+        },
+        {
+          "title": "Registro con Google",
+          "userStory": "**Como** visitante\n**Quiero** registrarme con mi cuenta de Google\n**Para** crear una cuenta sin llenar formularios",
+          "acceptanceCriteria": "**Scenario:** Registro exitoso con Google\n- **Given** estoy en la página de registro\n- **When** hago click en \"Registrarse con Google\"\n- **Then** autorizo en el popup de Google\n- **And** mi cuenta se crea automáticamente\n- **And** accedo al dashboard sin verificar email",
+          "estimate": "S",
+          "priority": "Alta"
+        },
+        {
+          "title": "Recuperar contraseña",
+          "userStory": "**Como** usuario registrado con credenciales\n**Quiero** restablecer mi contraseña olvidada\n**Para** recuperar acceso a mi cuenta",
+          "acceptanceCriteria": "**Scenario:** Solicitud de recuperación exitosa\n- **Given** olvidé mi contraseña\n- **When** ingreso mi email en \"Olvidé mi contraseña\"\n- **Then** recibo un email con link de recuperación\n- **And** veo mensaje \"Revisa tu correo\"\n\n**Scenario:** Restablecer contraseña\n- **Given** tengo un link válido de recuperación\n- **When** ingreso mi nueva contraseña\n- **Then** mi contraseña se actualiza\n- **And** puedo iniciar sesión con la nueva contraseña\n\n**Scenario:** Link expirado\n- **Given** tengo un link de recuperación de hace más de 24 horas\n- **When** intento usarlo\n- **Then** veo mensaje \"Este link ha expirado\"\n- **And** puedo solicitar uno nuevo",
+          "estimate": "M",
+          "priority": "Alta"
+        },
+        {
+          "title": "Verificación de email",
+          "userStory": "**Como** usuario recién registrado\n**Quiero** verificar mi email\n**Para** activar completamente mi cuenta",
+          "acceptanceCriteria": "**Scenario:** Verificación exitosa\n- **Given** recibí el email de verificación\n- **When** hago click en el link de verificación\n- **Then** mi cuenta queda verificada\n- **And** puedo iniciar sesión normalmente\n\n**Scenario:** Reenviar email de verificación\n- **Given** no recibí el email de verificación\n- **When** solicito reenvío\n- **Then** recibo un nuevo email de verificación",
+          "estimate": "S",
+          "priority": "Alta"
+        }
+      ]
+    },
+    {
+      "title": "Módulo de Instructores",
+      "module": "Instructores",
+      "description": "Gestión completa de instructores/docentes de la academia.",
+      "stories": [
+        {
+          "title": "Listar instructores",
+          "userStory": "**Como** administrador\n**Quiero** ver la lista de instructores registrados\n**Para** gestionar el personal docente",
+          "acceptanceCriteria": "**Scenario:** Ver lista de instructores\n- **Given** existen instructores registrados\n- **When** accedo a la sección Instructores\n- **Then** veo una lista con todos los instructores\n- **And** cada elemento muestra nombre, email y acciones rápidas\n\n**Scenario:** Lista vacía\n- **Given** no hay instructores registrados\n- **When** accedo a la sección Instructores\n- **Then** veo mensaje \"No hay instructores registrados\"\n- **And** veo botón para crear el primero",
+          "estimate": "S",
+          "priority": "Alta"
+        },
+        {
+          "title": "Crear instructor",
+          "userStory": "**Como** administrador\n**Quiero** registrar un nuevo instructor\n**Para** agregarlo al equipo docente",
+          "acceptanceCriteria": "**Scenario:** Crear instructor exitosamente\n- **Given** estoy en la sección Instructores\n- **When** hago click en \"Nuevo Instructor\" y completo el formulario\n- **Then** el instructor se guarda en el sistema\n- **And** aparece en la lista de instructores\n\n**Scenario:** Validación de campos requeridos\n- **Given** estoy creando un instructor\n- **When** dejo campos obligatorios vacíos\n- **Then** veo mensajes de validación en cada campo",
+          "estimate": "S",
+          "priority": "Alta"
+        },
+        {
+          "title": "Editar instructor",
+          "userStory": "**Como** administrador\n**Quiero** modificar los datos de un instructor\n**Para** mantener la información actualizada",
+          "acceptanceCriteria": "**Scenario:** Editar instructor exitosamente\n- **Given** existe un instructor registrado\n- **When** hago click en \"Editar\" y modifico sus datos\n- **Then** los cambios se guardan\n- **And** veo la información actualizada",
+          "estimate": "XS",
+          "priority": "Media"
+        },
+        {
+          "title": "Eliminar instructor",
+          "userStory": "**Como** administrador\n**Quiero** eliminar un instructor del sistema\n**Para** mantener el registro limpio",
+          "acceptanceCriteria": "**Scenario:** Eliminar instructor\n- **Given** existe un instructor sin grupos activos\n- **When** hago click en \"Eliminar\" y confirmo\n- **Then** el instructor se elimina del sistema\n\n**Scenario:** Eliminar instructor con grupos\n- **Given** existe un instructor con grupos asignados\n- **When** intento eliminarlo\n- **Then** veo advertencia sobre los grupos afectados\n- **And** debo reasignar los grupos antes de eliminar",
+          "estimate": "S",
+          "priority": "Media"
+        },
+        {
+          "title": "Ver detalle de instructor",
+          "userStory": "**Como** administrador\n**Quiero** ver el perfil completo de un instructor\n**Para** conocer su información y actividad",
+          "acceptanceCriteria": "**Scenario:** Ver detalle de instructor\n- **Given** existe un instructor registrado\n- **When** hago click en \"Ver\"\n- **Then** veo su información completa\n- **And** veo el historial de grupos que imparte/impartió",
+          "estimate": "S",
+          "priority": "Media"
+        },
+        {
+          "title": "Historial de grupos por instructor",
+          "userStory": "**Como** administrador\n**Quiero** ver el historial de grupos de un instructor\n**Para** conocer su trayectoria en la academia",
+          "acceptanceCriteria": "**Scenario:** Ver historial de grupos\n- **Given** estoy en el detalle de un instructor\n- **When** voy a la pestaña \"Historial de Grupos\"\n- **Then** veo lista de grupos actuales y pasados\n- **And** cada grupo muestra fechas y cantidad de alumnos",
+          "estimate": "M",
+          "priority": "Baja"
+        }
+      ]
+    },
+    {
+      "title": "Módulo de Alumnos",
+      "module": "Alumnos",
+      "description": "Gestión completa de alumnos de la academia.",
+      "stories": [
+        {
+          "title": "Listar alumnos",
+          "userStory": "**Como** administrador\n**Quiero** ver la lista de alumnos registrados\n**Para** gestionar la base de estudiantes",
+          "acceptanceCriteria": "**Scenario:** Ver lista de alumnos\n- **Given** existen alumnos registrados\n- **When** accedo a la sección Alumnos\n- **Then** veo una lista con todos los alumnos\n- **And** cada elemento muestra nombre, email y acciones rápidas (ver, editar, eliminar)\n\n**Scenario:** Buscar alumno\n- **Given** existen múltiples alumnos\n- **When** uso el buscador\n- **Then** la lista se filtra por nombre o email",
+          "estimate": "S",
+          "priority": "Alta"
+        },
+        {
+          "title": "Crear alumno",
+          "userStory": "**Como** administrador\n**Quiero** registrar un nuevo alumno\n**Para** agregarlo a la academia",
+          "acceptanceCriteria": "**Scenario:** Crear alumno exitosamente\n- **Given** estoy en la sección Alumnos\n- **When** hago click en \"Nuevo Alumno\" y completo el formulario\n- **Then** el alumno se guarda en el sistema\n- **And** aparece en la lista de alumnos\n\n**Scenario:** Datos requeridos\n- **Given** estoy creando un alumno\n- **When** no completo campos obligatorios\n- **Then** veo mensajes de validación",
+          "estimate": "S",
+          "priority": "Alta"
+        },
+        {
+          "title": "Editar alumno",
+          "userStory": "**Como** administrador\n**Quiero** modificar los datos de un alumno\n**Para** mantener la información actualizada",
+          "acceptanceCriteria": "**Scenario:** Editar alumno exitosamente\n- **Given** existe un alumno registrado\n- **When** hago click en \"Editar\" y modifico sus datos\n- **Then** los cambios se guardan correctamente",
+          "estimate": "XS",
+          "priority": "Media"
+        },
+        {
+          "title": "Eliminar alumno",
+          "userStory": "**Como** administrador\n**Quiero** eliminar un alumno del sistema\n**Para** mantener el registro actualizado",
+          "acceptanceCriteria": "**Scenario:** Eliminar alumno\n- **Given** existe un alumno\n- **When** hago click en \"Eliminar\" y confirmo\n- **Then** el alumno se elimina del sistema\n- **And** se mantiene su historial para reportes",
+          "estimate": "S",
+          "priority": "Media"
+        },
+        {
+          "title": "Ver detalle de alumno",
+          "userStory": "**Como** administrador\n**Quiero** ver el perfil completo de un alumno\n**Para** conocer su información y actividad",
+          "acceptanceCriteria": "**Scenario:** Ver detalle con pestañas\n- **Given** existe un alumno registrado\n- **When** hago click en \"Ver\"\n- **Then** veo su información en pestañas:\n- **And** Pestaña 1: Datos personales\n- **And** Pestaña 2: Historial de grupos\n- **And** Pestaña 3: Historial de pagos",
+          "estimate": "M",
+          "priority": "Alta"
+        },
+        {
+          "title": "Historial de grupos del alumno",
+          "userStory": "**Como** administrador\n**Quiero** ver los grupos en los que un alumno está o ha estado\n**Para** conocer su trayectoria",
+          "acceptanceCriteria": "**Scenario:** Ver historial de grupos\n- **Given** estoy en el detalle de un alumno\n- **When** voy a la pestaña \"Historial de Grupos\"\n- **Then** veo grupos actuales marcados como \"Activo\"\n- **And** veo grupos anteriores con fechas de inicio y fin",
+          "estimate": "M",
+          "priority": "Media"
+        },
+        {
+          "title": "Historial de pagos del alumno",
+          "userStory": "**Como** administrador\n**Quiero** ver el historial de pagos de un alumno\n**Para** conocer su estado financiero",
+          "acceptanceCriteria": "**Scenario:** Ver historial de pagos\n- **Given** estoy en el detalle de un alumno\n- **When** voy a la pestaña \"Historial de Pagos\"\n- **Then** veo todos los pagos realizados\n- **And** veo pagos pendientes si existen\n- **And** cada pago muestra fecha, monto y concepto",
+          "estimate": "M",
+          "priority": "Media"
+        }
+      ]
+    },
+    {
+      "title": "Módulo de Grupos/Clases",
+      "module": "Grupos",
+      "description": "Gestión de grupos y clases de la academia.",
+      "stories": [
+        {
+          "title": "Listar grupos",
+          "userStory": "**Como** administrador\n**Quiero** ver todos los grupos existentes\n**Para** gestionar las clases de la academia",
+          "acceptanceCriteria": "**Scenario:** Ver lista de grupos\n- **Given** existen grupos registrados\n- **When** accedo a la sección Grupos/Clases\n- **Then** veo lista de todos los grupos\n- **And** cada grupo muestra nombre, instructor, horario y acciones (ver, editar, eliminar)\n\n**Scenario:** Filtrar grupos\n- **Given** existen múltiples grupos\n- **When** filtro por instructor o estado\n- **Then** la lista muestra solo los grupos filtrados",
+          "estimate": "S",
+          "priority": "Alta"
+        },
+        {
+          "title": "Crear grupo",
+          "userStory": "**Como** administrador\n**Quiero** crear un nuevo grupo/clase\n**Para** ofrecer nuevos horarios a los alumnos",
+          "acceptanceCriteria": "**Scenario:** Crear grupo exitosamente\n- **Given** estoy en la sección Grupos\n- **When** hago click en \"Nuevo Grupo\" y completo: nombre, instructor, horario, capacidad\n- **Then** el grupo se crea en el sistema\n- **And** está disponible para inscribir alumnos",
+          "estimate": "M",
+          "priority": "Alta"
+        },
+        {
+          "title": "Ver detalle de grupo",
+          "userStory": "**Como** administrador\n**Quiero** ver los detalles de un grupo\n**Para** conocer su estado y alumnos inscritos",
+          "acceptanceCriteria": "**Scenario:** Ver detalle de grupo\n- **Given** existe un grupo\n- **When** hago click en \"Ver\"\n- **Then** veo: estado (activo/inactivo), capacidad, cupo disponible\n- **And** veo lista de alumnos inscritos\n- **And** veo información del instructor asignado",
+          "estimate": "M",
+          "priority": "Alta"
+        },
+        {
+          "title": "Editar grupo",
+          "userStory": "**Como** administrador\n**Quiero** modificar la información de un grupo\n**Para** actualizar horarios, capacidad o instructor",
+          "acceptanceCriteria": "**Scenario:** Editar información del grupo\n- **Given** existe un grupo\n- **When** hago click en \"Editar\"\n- **Then** puedo modificar nombre, capacidad, horario, instructor\n- **And** los cambios se guardan correctamente",
+          "estimate": "S",
+          "priority": "Media"
+        },
+        {
+          "title": "Eliminar grupo",
+          "userStory": "**Como** administrador\n**Quiero** eliminar un grupo\n**Para** remover clases que ya no se imparten",
+          "acceptanceCriteria": "**Scenario:** Eliminar grupo sin alumnos\n- **Given** existe un grupo sin alumnos inscritos\n- **When** hago click en \"Eliminar\" y confirmo\n- **Then** el grupo se elimina\n\n**Scenario:** Eliminar grupo con alumnos\n- **Given** existe un grupo con alumnos\n- **When** intento eliminarlo\n- **Then** veo advertencia con cantidad de alumnos afectados\n- **And** debo desinscribir alumnos primero o forzar eliminación",
+          "estimate": "S",
+          "priority": "Media"
+        },
+        {
+          "title": "Inscribir alumno a grupo",
+          "userStory": "**Como** administrador\n**Quiero** inscribir un alumno a un grupo\n**Para** que pueda tomar clases",
+          "acceptanceCriteria": "**Scenario:** Inscribir alumno exitosamente\n- **Given** existe un grupo con cupo disponible\n- **When** selecciono un alumno y lo inscribo\n- **Then** el alumno aparece en la lista del grupo\n- **And** el cupo disponible disminuye\n\n**Scenario:** Grupo sin cupo\n- **Given** el grupo está lleno\n- **When** intento inscribir un alumno\n- **Then** veo mensaje \"No hay cupo disponible\"",
+          "estimate": "M",
+          "priority": "Alta"
+        },
+        {
+          "title": "Desinscribir alumno de grupo",
+          "userStory": "**Como** administrador\n**Quiero** quitar un alumno de un grupo\n**Para** liberar su lugar",
+          "acceptanceCriteria": "**Scenario:** Desinscribir alumno\n- **Given** un alumno está inscrito en un grupo\n- **When** hago click en \"Quitar\" y confirmo\n- **Then** el alumno se remueve del grupo\n- **And** el cupo disponible aumenta\n- **And** se registra en el historial del alumno",
+          "estimate": "S",
+          "priority": "Alta"
+        }
+      ]
+    },
+    {
+      "title": "Módulo de Asistencia",
+      "module": "Asistencia",
+      "description": "Control y registro de asistencia de alumnos a clases.",
+      "stories": [
+        {
+          "title": "Registrar asistencia por QR",
+          "userStory": "**Como** alumno\n**Quiero** registrar mi asistencia escaneando un QR\n**Para** confirmar mi presencia en clase de forma rápida",
+          "acceptanceCriteria": "**Scenario:** Registro exitoso por QR\n- **Given** tengo mi código QR de alumno\n- **When** lo escaneo en el lector de la academia\n- **Then** mi asistencia queda registrada\n- **And** veo confirmación en pantalla\n\n**Scenario:** QR inválido\n- **Given** presento un QR no reconocido\n- **When** se escanea\n- **Then** veo mensaje \"Código no válido\"",
+          "estimate": "L",
+          "priority": "Alta"
+        },
+        {
+          "title": "Registrar asistencia por número de afiliación",
+          "userStory": "**Como** alumno\n**Quiero** registrar mi asistencia con mi número de afiliación\n**Para** confirmar mi presencia si no tengo el QR",
+          "acceptanceCriteria": "**Scenario:** Registro exitoso por número\n- **Given** conozco mi número de afiliación\n- **When** lo ingreso en el sistema\n- **Then** mi asistencia queda registrada\n\n**Scenario:** Número no encontrado\n- **Given** ingreso un número incorrecto\n- **When** intento registrar\n- **Then** veo mensaje \"Número de afiliación no encontrado\"",
+          "estimate": "M",
+          "priority": "Alta"
+        },
+        {
+          "title": "Generar QR de alumno",
+          "userStory": "**Como** administrador\n**Quiero** generar el código QR de un alumno\n**Para** que pueda registrar su asistencia",
+          "acceptanceCriteria": "**Scenario:** Generar QR\n- **Given** existe un alumno registrado\n- **When** voy a su perfil y solicito generar QR\n- **Then** se genera un código QR único\n- **And** puedo descargarlo o imprimirlo",
+          "estimate": "M",
+          "priority": "Media"
+        },
+        {
+          "title": "Ver historial de asistencia por grupo",
+          "userStory": "**Como** administrador\n**Quiero** ver la asistencia de un grupo\n**Para** monitorear la participación de los alumnos",
+          "acceptanceCriteria": "**Scenario:** Ver asistencia del grupo\n- **Given** existe un grupo con registros de asistencia\n- **When** accedo al historial de asistencia del grupo\n- **Then** veo lista de fechas con alumnos que asistieron\n- **And** puedo filtrar por rango de fechas",
+          "estimate": "M",
+          "priority": "Media"
+        },
+        {
+          "title": "Registrar asistencia manual",
+          "userStory": "**Como** administrador\n**Quiero** registrar asistencia manualmente\n**Para** casos donde el QR o número no funcione",
+          "acceptanceCriteria": "**Scenario:** Registro manual\n- **Given** un alumno no pudo registrar su asistencia\n- **When** busco al alumno y registro manualmente\n- **Then** la asistencia queda registrada\n- **And** se marca como \"registro manual\"",
+          "estimate": "S",
+          "priority": "Media"
+        }
+      ]
+    },
+    {
+      "title": "Módulo de Pagos",
+      "module": "Pagos",
+      "description": "Gestión de membresías, pagos y recordatorios.",
+      "stories": [
+        {
+          "title": "Listar membresías próximas a vencer",
+          "userStory": "**Como** administrador\n**Quiero** ver las membresías próximas a vencer\n**Para** contactar a los alumnos oportunamente",
+          "acceptanceCriteria": "**Scenario:** Ver membresías por vencer\n- **Given** existen membresías activas\n- **When** accedo a la sección de Pagos\n- **Then** veo lista de membresías ordenadas por fecha de vencimiento\n- **And** las próximas a vencer (7 días) están destacadas\n\n**Scenario:** Filtrar por estado\n- **Given** estoy en la sección de Pagos\n- **When** filtro por \"Vencidas\"\n- **Then** veo solo membresías vencidas",
+          "estimate": "M",
+          "priority": "Alta"
+        },
+        {
+          "title": "Registrar pago de membresía",
+          "userStory": "**Como** administrador\n**Quiero** registrar el pago de una membresía\n**Para** actualizar el estado del alumno",
+          "acceptanceCriteria": "**Scenario:** Registrar pago exitosamente\n- **Given** un alumno tiene membresía vencida o por vencer\n- **When** registro su pago con monto y fecha\n- **Then** su membresía se renueva\n- **And** el pago aparece en su historial\n\n**Scenario:** Pago parcial\n- **Given** un alumno paga menos del total\n- **When** registro el pago parcial\n- **Then** queda registrado el saldo pendiente",
+          "estimate": "M",
+          "priority": "Alta"
+        },
+        {
+          "title": "Verificar acceso a clases",
+          "userStory": "**Como** sistema\n**Quiero** verificar si un alumno puede tomar clases\n**Para** controlar el acceso según su estado de pago",
+          "acceptanceCriteria": "**Scenario:** Alumno con membresía vigente\n- **Given** el alumno tiene membresía activa\n- **When** intenta registrar asistencia\n- **Then** puede acceder sin problemas\n\n**Scenario:** Alumno con membresía vencida\n- **Given** el alumno tiene membresía vencida\n- **When** intenta registrar asistencia\n- **Then** ve alerta \"Membresía vencida - Contacta administración\"",
+          "estimate": "M",
+          "priority": "Alta"
+        },
+        {
+          "title": "Recordatorio de pago automático",
+          "userStory": "**Como** administrador\n**Quiero** que el sistema envíe recordatorios automáticos\n**Para** notificar a los alumnos antes del vencimiento",
+          "acceptanceCriteria": "**Scenario:** Envío de recordatorio\n- **Given** una membresía vence en 5 días\n- **When** el sistema ejecuta la tarea programada\n- **Then** envía email/notificación al alumno\n- **And** registra que se envió el recordatorio\n\n**Scenario:** Configurar días de anticipación\n- **Given** soy administrador\n- **When** configuro recordatorios a 7, 3 y 1 día antes\n- **Then** el sistema enviará 3 recordatorios por vencimiento",
+          "estimate": "L",
+          "priority": "Media"
+        },
+        {
+          "title": "Historial general de pagos",
+          "userStory": "**Como** administrador\n**Quiero** ver el historial de todos los pagos\n**Para** tener control financiero de la academia",
+          "acceptanceCriteria": "**Scenario:** Ver historial de pagos\n- **Given** existen pagos registrados\n- **When** accedo al historial general\n- **Then** veo todos los pagos con fecha, alumno y monto\n- **And** puedo filtrar por rango de fechas\n- **And** veo total recaudado en el período",
+          "estimate": "M",
+          "priority": "Media"
+        }
+      ]
+    },
+    {
+      "title": "Módulo de Reportes",
+      "module": "Reportes",
+      "description": "Dashboard con métricas y reportes de la academia.",
+      "stories": [
+        {
+          "title": "Dashboard con KPIs principales",
+          "userStory": "**Como** administrador\n**Quiero** ver un dashboard con métricas clave\n**Para** conocer el estado general de la academia",
+          "acceptanceCriteria": "**Scenario:** Ver dashboard\n- **Given** soy administrador\n- **When** accedo al módulo de Reportes\n- **Then** veo KPIs: total alumnos activos, ingresos del mes, clases impartidas, tasa de asistencia\n- **And** veo gráficas de tendencias",
+          "estimate": "L",
+          "priority": "Baja"
+        },
+        {
+          "title": "Reporte de asistencia",
+          "userStory": "**Como** administrador\n**Quiero** generar reportes de asistencia\n**Para** analizar la participación de los alumnos",
+          "acceptanceCriteria": "**Scenario:** Generar reporte de asistencia\n- **Given** existen registros de asistencia\n- **When** selecciono rango de fechas y grupo (opcional)\n- **Then** veo reporte con porcentaje de asistencia por alumno\n- **And** puedo exportar a Excel/PDF",
+          "estimate": "M",
+          "priority": "Baja"
+        },
+        {
+          "title": "Reporte de ingresos",
+          "userStory": "**Como** administrador\n**Quiero** ver reportes de ingresos\n**Para** analizar la situación financiera",
+          "acceptanceCriteria": "**Scenario:** Generar reporte de ingresos\n- **Given** existen pagos registrados\n- **When** selecciono rango de fechas\n- **Then** veo total de ingresos, desglose por tipo\n- **And** veo gráfica de ingresos por mes\n- **And** puedo exportar a Excel/PDF",
+          "estimate": "M",
+          "priority": "Baja"
+        }
+      ]
+    }
+  ]
+}

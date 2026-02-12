@@ -1,0 +1,102 @@
+### Variables
+@baseUrl = http://localhost:3000
+@academyId = PIp0OwatTywTYtbwgccpkmo51HuXoqFq
+
+###############################################
+# MEMBRESIAS Y PAGOS
+###############################################
+# Prefix: /api/academies/:academyId
+# Requiere: sesion activa + pertenecer a la academia
+# Primero haz login en auth.http
+###############################################
+
+@studentId = c89f49f9-8ea6-4416-a6c3-cefc2184c4ab
+
+### ========================================
+### MEMBRESIAS - LISTAR
+### ========================================
+
+### Listar todas las membresias
+GET {{baseUrl}}/api/academies/{{academyId}}/memberships?page=1&pageSize=20
+
+### Listar membresias activas
+GET {{baseUrl}}/api/academies/{{academyId}}/memberships?status=active&page=1&pageSize=20
+
+### Listar membresias expiradas
+GET {{baseUrl}}/api/academies/{{academyId}}/memberships?status=expired&page=1&pageSize=20
+
+### Listar membresias por vencer
+GET {{baseUrl}}/api/academies/{{academyId}}/memberships?status=expiring_soon&page=1&pageSize=20
+
+### Listar membresias canceladas
+GET {{baseUrl}}/api/academies/{{academyId}}/memberships?status=cancelled&page=1&pageSize=20
+
+### ========================================
+### MEMBRESIAS - CREAR
+### ========================================
+
+### Crear membresia mensual
+# @name createMembership
+POST {{baseUrl}}/api/academies/{{academyId}}/memberships
+Content-Type: application/json
+
+{
+  "student_id": "{{studentId}}",
+  "start_date": "2026-02-10",
+  "end_date": "2026-03-10",
+  "amount": "500.00"
+}
+
+### Crear membresia trimestral
+POST {{baseUrl}}/api/academies/{{academyId}}/memberships
+Content-Type: application/json
+
+{
+  "student_id": "{{studentId}}",
+  "start_date": "2026-02-01",
+  "end_date": "2026-05-01",
+  "amount": "1350.00"
+}
+
+### ========================================
+### PAGOS - LISTAR
+### ========================================
+
+### Listar todos los pagos
+GET {{baseUrl}}/api/academies/{{academyId}}/payments?page=1&pageSize=20
+
+### Listar pagos en rango de fechas
+GET {{baseUrl}}/api/academies/{{academyId}}/payments?from=2026-01-01&to=2026-02-28&page=1&pageSize=20
+
+### Listar pagos de febrero 2026
+GET {{baseUrl}}/api/academies/{{academyId}}/payments?from=2026-02-01&to=2026-02-28
+
+### ========================================
+### PAGOS - CREAR
+### ========================================
+
+@membershipId = REPLACE_WITH_MEMBERSHIP_ID
+
+### Pago completo de membresia
+POST {{baseUrl}}/api/academies/{{academyId}}/payments
+Content-Type: application/json
+
+{
+  "membership_id": "{{membershipId}}",
+  "student_id": "{{studentId}}",
+  "amount": "500.00",
+  "type": "full",
+  "notes": "Pago mensual completo - Febrero 2026"
+}
+
+### Pago parcial (abono)
+POST {{baseUrl}}/api/academies/{{academyId}}/payments
+Content-Type: application/json
+
+{
+  "membership_id": "{{membershipId}}",
+  "student_id": "{{studentId}}",
+  "amount": "250.00",
+  "type": "partial",
+  "notes": "Primer abono - Febrero 2026"
+}
