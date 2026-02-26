@@ -35,7 +35,9 @@ export interface DanceGroupTable {
   instructor_id: string;
   name: string;
   description: string | null;
-  schedule: string | null;
+  schedule_days: string[] | null;
+  start_time: string | null;
+  end_time: string | null;
   capacity: number;
   is_active: Generated<boolean>;
   created_at: Generated<Date>;
@@ -95,6 +97,35 @@ export interface PaymentReminderTable {
   sent_at: Generated<Date>;
 }
 
+// ---------- SaaS Plans ----------
+export interface SaaSPlanTable {
+  id: Generated<string>;
+  name: string;
+  description: string | null;
+  price: ColumnType<string, string, string>; // numeric stored as string
+  currency: string;
+  interval: string;
+  features: unknown; // jsonb
+  stripe_price_id: string | null;
+  is_active: Generated<boolean>;
+  created_at: Generated<Date>;
+  updated_at: Generated<Date>;
+}
+
+// ---------- SaaS Subscriptions ----------
+export interface SaasSubscriptionTable {
+  id: Generated<string>;
+  organization_id: string;
+  plan_id: string;
+  status: string;
+  stripe_subscription_id: string | null;
+  current_period_start: Date | null;
+  current_period_end: Date | null;
+  cancel_at_period_end: Generated<boolean>;
+  created_at: Generated<Date>;
+  updated_at: Generated<Date>;
+}
+
 // ---------- Database interface ----------
 export interface Database {
   instructor: InstructorTable;
@@ -105,4 +136,6 @@ export interface Database {
   membership: MembershipTable;
   payment: PaymentTable;
   payment_reminder: PaymentReminderTable;
+  saas_plans: SaaSPlanTable;
+  saas_subscriptions: SaasSubscriptionTable;
 }

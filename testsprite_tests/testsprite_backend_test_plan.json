@@ -1,0 +1,32 @@
+[
+  {
+    "id": "TC001",
+    "title": "post api auth sign up email register new user",
+    "description": "Test the user registration endpoint POST /api/auth/sign-up/email with valid email, password, and name to ensure it returns 200 with the created User object."
+  },
+  {
+    "id": "TC002",
+    "title": "get api saas plans list all saas plans",
+    "description": "Test the GET /api/saas/plans endpoint to verify it returns 200 with a list of all available SaaS subscription plans."
+  },
+  {
+    "id": "TC003",
+    "title": "post api saas subscribe create subscription",
+    "description": "Test the POST /api/saas/subscribe endpoint with valid Authorization and planId to ensure it creates a subscription and returns 200 with SubscriptionResponse."
+  },
+  {
+    "id": "TC004",
+    "title": "get api academies academyid students list students for academy",
+    "description": "Test the GET /api/academies/:academyId/students endpoint with valid Authorization to verify it returns 200 with a list of students scoped to the specified academy."
+  },
+  {
+    "id": "TC005",
+    "title": "post api academies academyid students create student for academy",
+    "description": "Test the POST /api/academies/:academyId/students endpoint with valid Authorization and valid student data (name and email) to ensure it creates a student and returns 200 with the Student object."
+  },
+  {
+    "id": "TC006",
+    "title": "get api academies academyid instructors list instructors for academy",
+    "description": "Test the GET /api/academies/:academyId/instructors endpoint with valid Authorization to verify it returns 200 with a list of instructors scoped to the specified academy."
+  }
+]

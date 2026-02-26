@@ -10,6 +10,7 @@ import {
 } from './students.schema';
 import { searchPaginationSchema } from '../../shared/schemas/pagination.schema';
 import { success, paginated, buildPagination } from '../../shared/helpers/response';
+import { sendStudentWelcomeEmail } from './students.emails';
 
 export async function studentsRoutes(app: FastifyInstance) {
   const server = app.withTypeProvider<ZodTypeProvider>();
@@ -45,6 +46,17 @@ export async function studentsRoutes(app: FastifyInstance) {
     async (request, reply) => {
       const { academyId } = request.params;
       const student = await studentsService.create(academyId, request.body);
+
+      // Enviar email de bienvenida de forma async (fire-and-forget)
+      sendStudentWelcomeEmail({
+        name: student.name,
+        email: student.email,
+        affiliation_number: student.affiliation_number,
+        qr_code: student.qr_code,
+      }).catch((err) => {
+        request.log.error({ err }, '[STUDENTS] Error al enviar email de bienvenida');
+      });
+
       return success(reply, student, 201);
     },
   );

@@ -1,5 +1,6 @@
 import fastify, { FastifyInstance } from 'fastify';
 import fastifyCors from '@fastify/cors';
+import fastifyRawBody from 'fastify-raw-body';
 import FastifyBetterAuth from 'fastify-better-auth';
 import fp from 'fastify-plugin';
 import {
@@ -14,6 +15,7 @@ import { groupsRoutes } from './modules/groups';
 import { attendanceRoutes } from './modules/attendance';
 import { paymentsRoutes } from './modules/payments';
 import { reportsRoutes } from './modules/reports';
+import { saasSubscriptionRoutes } from './modules/saas-subscription';
 import { AppError } from './shared/helpers/errors';
 import { initCronJobs } from './lib/cron';
 
@@ -52,7 +54,15 @@ const buildApp = (): FastifyInstance => {
     });
   });
 
-  // 1. CORS - debe ir antes que el handler de auth
+  // 1. Raw body (necesario para verificar firma de Stripe webhooks)
+  app.register(fastifyRawBody, {
+    field: 'rawBody',
+    global: false,
+    runFirst: true,
+    routes: ['/api/saas/webhooks/stripe'],
+  });
+
+  // CORS - debe ir antes que el handler de auth
   app.register(fastifyCors, {
     origin: process.env.TRUSTED_ORIGINS
       ? process.env.TRUSTED_ORIGINS.split(',').map((o) => o.trim())
@@ -63,17 +73,17 @@ const buildApp = (): FastifyInstance => {
     maxAge: 86400,
   });
 
-  // 2. Better Auth - registra automáticamente las rutas /api/auth/*
+  // Better Auth - registra automáticamente las rutas /api/auth/*
   app.register(
     fp(async (instance) => {
       await instance.register(FastifyBetterAuth, { auth });
     }),
   );
 
-  // 3. Rutas custom del módulo auth (ej: /auth/me)
+  // Rutas custom del módulo auth (ej: /auth/me)
   app.register(authRoutes, { prefix: '/auth' });
 
-  // 4. Módulos de negocio (scoped por academia)
+  // Módulos de negocio (scoped por academia)
   app.register(instructorsRoutes, { prefix: '/api/academies/:academyId/instructors' });
   app.register(studentsRoutes, { prefix: '/api/academies/:academyId/students' });
   app.register(groupsRoutes, { prefix: '/api/academies/:academyId/groups' });
@@ -81,7 +91,10 @@ const buildApp = (): FastifyInstance => {
   app.register(paymentsRoutes, { prefix: '/api/academies/:academyId' });
   app.register(reportsRoutes, { prefix: '/api/academies/:academyId/reports' });
 
-  // 5. Inicializar cron jobs (recordatorios de pago, etc.)
+  // Módulo SaaS (Planes y Suscripciones)
+  app.register(saasSubscriptionRoutes, { prefix: '/api/saas' });
+
+  // Inicializar cron jobs (recordatorios de pago, etc.)
   app.addHook('onReady', () => {
     initCronJobs();
   });

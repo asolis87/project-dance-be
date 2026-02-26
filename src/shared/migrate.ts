@@ -1,8 +1,38 @@
 import 'dotenv/config';
 import path from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { promises as fs } from 'node:fs';
-import { Kysely, Migrator, FileMigrationProvider, PostgresDialect } from 'kysely';
+import { Kysely, Migrator, PostgresDialect } from 'kysely';
+import type { Migration, MigrationProvider } from 'kysely';
 import { Pool } from 'pg';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+class ESMFileMigrationProvider implements MigrationProvider {
+  private migrationFolder: string;
+
+  constructor(migrationFolder: string) {
+    this.migrationFolder = migrationFolder;
+  }
+
+  async getMigrations(): Promise<Record<string, Migration>> {
+    const migrations: Record<string, Migration> = {};
+    const files = await fs.readdir(this.migrationFolder);
+
+    for (const fileName of files) {
+      if (!fileName.endsWith('.js') && !fileName.endsWith('.ts')) continue;
+
+      const filePath = path.join(this.migrationFolder, fileName);
+      const migration = await import(pathToFileURL(filePath).href);
+
+      const migrationKey = fileName.replace(/\.(js|ts)$/, '');
+      migrations[migrationKey] = migration;
+    }
+
+    return migrations;
+  }
+}
 
 async function runMigrations() {
   const db = new Kysely<unknown>({
@@ -15,11 +45,9 @@ async function runMigrations() {
 
   const migrator = new Migrator({
     db,
-    provider: new FileMigrationProvider({
-      fs,
-      path,
-      migrationFolder: path.join(__dirname, 'database', 'migrations'),
-    }),
+    provider: new ESMFileMigrationProvider(
+      path.join(__dirname, 'database', 'migrations'),
+    ),
   });
 
   console.log('Ejecutando migraciones custom...');

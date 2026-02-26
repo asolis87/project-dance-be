@@ -1,4 +1,5 @@
 import { db } from '../../lib/db';
+import { sql } from 'kysely';
 import type { CreateGroupDTO, UpdateGroupDTO } from './groups.schema';
 import { NotFoundError, ConflictError, ValidationError } from '../../shared/helpers/errors';
 
@@ -30,7 +31,9 @@ export class GroupsService {
         'dance_group.id',
         'dance_group.name',
         'dance_group.description',
-        'dance_group.schedule',
+        'dance_group.schedule_days',
+        'dance_group.start_time',
+        'dance_group.end_time',
         'dance_group.capacity',
         'dance_group.is_active',
         'dance_group.created_at',
@@ -60,7 +63,9 @@ export class GroupsService {
         'dance_group.organization_id',
         'dance_group.name',
         'dance_group.description',
-        'dance_group.schedule',
+        'dance_group.schedule_days',
+        'dance_group.start_time',
+        'dance_group.end_time',
         'dance_group.capacity',
         'dance_group.is_active',
         'dance_group.created_at',
@@ -102,6 +107,43 @@ export class GroupsService {
   }
 
   /**
+   * Verificar conflictos de horario para un instructor.
+   * Lanza ConflictError si hay solapamiento de días y horas con otro grupo activo.
+   */
+  private async checkScheduleConflict(
+    organizationId: string,
+    instructorId: string,
+    scheduleDays: string[],
+    startTime: string,
+    endTime: string,
+    excludeGroupId?: string,
+  ): Promise<void> {
+    let query = db
+      .selectFrom('dance_group')
+      .where('organization_id', '=', organizationId)
+      .where('instructor_id', '=', instructorId)
+      .where('is_active', '=', true)
+      // Días en común: operador && de arrays en PostgreSQL
+      .where(sql<boolean>`schedule_days && ${sql.val(scheduleDays)}::text[]`)
+      // Solapamiento de horario: start_time < end_time_nuevo AND end_time > start_time_nuevo
+      .where(sql<boolean>`start_time < ${endTime}::time`)
+      .where(sql<boolean>`end_time > ${startTime}::time`)
+      .select('name');
+
+    if (excludeGroupId) {
+      query = query.where('id', '!=', excludeGroupId);
+    }
+
+    const conflict = await query.executeTakeFirst();
+
+    if (conflict) {
+      throw new ConflictError(
+        `El instructor ya tiene el grupo "${conflict.name}" en ese horario. Los días y horas se solapan.`,
+      );
+    }
+  }
+
+  /**
    * Crear un nuevo grupo.
    */
   async create(organizationId: string, data: CreateGroupDTO) {
@@ -117,6 +159,15 @@ export class GroupsService {
       throw new NotFoundError('Instructor', data.instructor_id);
     }
 
+    // Verificar conflictos de horario
+    await this.checkScheduleConflict(
+      organizationId,
+      data.instructor_id,
+      data.schedule_days,
+      data.start_time,
+      data.end_time,
+    );
+
     const group = await db
       .insertInto('dance_group')
       .values({
@@ -124,7 +175,9 @@ export class GroupsService {
         instructor_id: data.instructor_id,
         name: data.name,
         description: data.description ?? null,
-        schedule: data.schedule ?? null,
+        schedule_days: data.schedule_days,
+        start_time: data.start_time,
+        end_time: data.end_time,
         capacity: data.capacity,
       })
       .returningAll()
@@ -161,6 +214,23 @@ export class GroupsService {
       if (!instructor) {
         throw new NotFoundError('Instructor', data.instructor_id);
       }
+    }
+
+    // Verificar conflictos de horario si cambian datos relevantes
+    const instructorId = data.instructor_id ?? existing.instructor_id;
+    const scheduleDays = data.schedule_days ?? existing.schedule_days;
+    const startTime = data.start_time ?? existing.start_time;
+    const endTime = data.end_time ?? existing.end_time;
+
+    if (scheduleDays && startTime && endTime) {
+      await this.checkScheduleConflict(
+        organizationId,
+        instructorId,
+        scheduleDays,
+        startTime,
+        endTime,
+        id, // excluir el grupo actual
+      );
     }
 
     const updated = await db
@@ -205,6 +275,16 @@ export class GroupsService {
         `No se puede eliminar el grupo. Tiene ${activeEnrollments.count} alumno(s) inscrito(s). Desinscríbelos primero.`,
       );
     }
+
+    await db
+      .deleteFrom('enrollment')
+      .where('group_id', '=', id)
+      .execute();
+
+    await db
+      .deleteFrom('attendance')
+      .where('group_id', '=', id)
+      .execute();
 
     await db
       .deleteFrom('dance_group')

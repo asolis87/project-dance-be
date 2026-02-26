@@ -17,6 +17,7 @@ Documentacion completa de la API backend para el equipo de frontend.
 - [Membresias](#7-membresias)
 - [Pagos](#8-pagos)
 - [Reportes](#9-reportes)
+- [Suscripcion SaaS](#10-suscripcion-saas)
 - [Formato de respuestas](#formato-de-respuestas)
 - [Codigos de error](#codigos-de-error)
 - [Configuracion del cliente HTTP](#configuracion-del-cliente-http)
@@ -557,8 +558,8 @@ Listar alumnos con paginacion y busqueda.
       "name": "Ana Lopez",
       "email": "ana@email.com",
       "phone": "5559876543",
-      "affiliation_number": "ALU-00001",
-      "qr_code": null,
+      "affiliation_number": "AF-000001",
+      "qr_code": "data:image/png;base64,...",
       "is_active": true,
       "created_at": "2026-01-15T10:00:00Z",
       "updated_at": "2026-01-15T10:00:00Z"
@@ -572,7 +573,7 @@ Listar alumnos con paginacion y busqueda.
 
 ### POST `/api/academies/:academyId/students`
 
-Crear alumno. El `affiliation_number` se genera automaticamente.
+Crear alumno. El `affiliation_number` y el `qr_code` se generan automaticamente.
 
 **Body:**
 
@@ -591,6 +592,25 @@ Crear alumno. El `affiliation_number` se genera automaticamente.
 ```
 
 **Respuesta:** `{ "data": alumno }` con status 201.
+
+```json
+{
+  "data": {
+    "id": "uuid",
+    "organization_id": "uuid",
+    "name": "Ana Lopez",
+    "email": "ana@email.com",
+    "phone": "5559876543",
+    "affiliation_number": "AF-000001",
+    "qr_code": "data:image/png;base64,...",
+    "is_active": true,
+    "created_at": "2026-02-14T10:00:00Z",
+    "updated_at": "2026-02-14T10:00:00Z"
+  }
+}
+```
+
+> **Email de bienvenida:** Al crear un alumno, se envia automaticamente un email de bienvenida al correo del alumno con su numero de afiliacion y codigo QR de acceso embebido. El envio es asincrono y no bloquea la respuesta (si el email falla, el alumno se crea igualmente). Requiere `RESEND_API_KEY` configurada; sin ella, el email se muestra en consola (modo desarrollo).
 
 ---
 
@@ -635,7 +655,9 @@ Historial de grupos en los que esta/estuvo inscrito.
     {
       "group_id": "uuid",
       "group_name": "Salsa Avanzado",
-      "schedule": "Lun/Mie 18:00-19:30",
+      "schedule_days": ["mon", "wed"],
+      "start_time": "18:00",
+      "end_time": "19:30",
       "group_active": true,
       "enrolled_at": "2026-01-10T10:00:00Z",
       "unenrolled_at": null,
@@ -657,7 +679,7 @@ Historial de pagos del alumno.
 
 ### GET `/api/academies/:academyId/students/:id/qr`
 
-Generar/obtener codigo QR del alumno. El QR codifica su numero de afiliacion.
+Regenerar/obtener codigo QR del alumno. El QR se genera automaticamente al crear el alumno, pero este endpoint permite regenerarlo si es necesario. El QR codifica el numero de afiliacion, ID del alumno y ID de la organizacion.
 
 **Respuesta:**
 
@@ -665,7 +687,7 @@ Generar/obtener codigo QR del alumno. El QR codifica su numero de afiliacion.
 {
   "data": {
     "qr_code": "data:image/png;base64,...",
-    "affiliation_number": "ALU-00001"
+    "affiliation_number": "AF-000001"
   }
 }
 ```
@@ -694,7 +716,7 @@ Listar grupos con paginacion y busqueda.
 
 ### POST `/api/academies/:academyId/groups`
 
-Crear grupo.
+Crear grupo. Valida automaticamente que no haya conflicto de horario con otros grupos activos del mismo instructor.
 
 **Body:**
 
@@ -703,7 +725,9 @@ Crear grupo.
 | `name` | string | Si | Min 1, max 200 |
 | `instructor_id` | string | Si | UUID valido de un instructor existente |
 | `description` | string | No | Max 500 |
-| `schedule` | string | No | Max 200 (ej: "Lun/Mie 18:00-19:30") |
+| `schedule_days` | string[] | Si | Array de dias: `mon`, `tue`, `wed`, `thu`, `fri`, `sat`, `sun`. Min 1 |
+| `start_time` | string | Si | Formato `HH:MM` (ej: `"18:00"`) |
+| `end_time` | string | Si | Formato `HH:MM`, debe ser posterior a `start_time` |
 | `capacity` | number | Si | Entero, min 1 |
 
 ```json
@@ -711,12 +735,16 @@ Crear grupo.
   "name": "Salsa Avanzado",
   "instructor_id": "uuid-del-instructor",
   "description": "Clase de salsa nivel avanzado",
-  "schedule": "Lun/Mie 18:00-19:30",
+  "schedule_days": ["mon", "wed"],
+  "start_time": "18:00",
+  "end_time": "19:30",
   "capacity": 25
 }
 ```
 
 **Respuesta:** `{ "data": grupo }` con status 201.
+
+> **Error 409 - Conflicto de horario:** Si el instructor ya tiene otro grupo activo con dias y horas que se solapan, retorna `{ "error": "CONFLICT", "message": "El instructor ya tiene el grupo \"X\" en ese horario. Los días y horas se solapan." }`.
 
 ---
 
@@ -728,16 +756,18 @@ Detalle del grupo incluyendo alumnos inscritos.
 
 ### PUT `/api/academies/:academyId/groups/:id`
 
-Actualizar grupo.
+Actualizar grupo. Si se modifican los campos de horario o instructor, se valida que no haya conflicto con otros grupos.
 
-**Body:**
+**Body:** (todos opcionales)
 
 | Campo | Tipo | Validacion |
 |-------|------|------------|
 | `name` | string | Min 1, max 200 |
 | `instructor_id` | string | UUID |
 | `description` | string \| null | Max 500 |
-| `schedule` | string \| null | Max 200 |
+| `schedule_days` | string[] | Array de dias validos, min 1 |
+| `start_time` | string | Formato `HH:MM` |
+| `end_time` | string | Formato `HH:MM`, posterior a `start_time` |
 | `capacity` | number | Entero, min 1 |
 | `is_active` | boolean | - |
 
@@ -1158,6 +1188,212 @@ Reporte de ingresos.
 | `total` | Suma total de ingresos (string decimal) |
 | `by_month` | Desglose por mes (mas reciente primero) |
 | `by_type` | Desglose por tipo de pago (`full` / `partial`) |
+
+---
+
+## 10. Suscripcion SaaS (Stripe)
+
+Endpoints para gestionar la suscripcion de la academia al servicio (SaaS). La pasarela de pago es **Stripe** mediante Checkout Sessions.
+
+**Base:** `/api/saas`
+
+**Auth:** Requiere sesion.
+
+### GET `/api/saas/plans`
+
+Listar los planes de suscripcion disponibles.
+
+**Respuesta:**
+
+```json
+[
+  {
+    "id": "uuid",
+    "name": "Gratis",
+    "description": "Plan ideal para academias pequeñas que están empezando.",
+    "price": "0.00",
+    "currency": "USD",
+    "interval": "month",
+    "features": { "students": 10, "instructors": 1, "groups": 2 },
+    "is_active": true
+  },
+  {
+    "id": "uuid",
+    "name": "Básico",
+    "description": "Para academias en crecimiento.",
+    "price": "29.00",
+    "currency": "USD",
+    "interval": "month",
+    "features": { "students": 100, "instructors": 5, "groups": 10 },
+    "is_active": true
+  },
+  {
+    "id": "uuid",
+    "name": "Pro",
+    "description": "Sin límites para academias consolidadas.",
+    "price": "99.00",
+    "currency": "USD",
+    "interval": "month",
+    "features": { "students": -1, "instructors": -1, "groups": -1 },
+    "is_active": true
+  }
+]
+```
+
+> `features` con valor `-1` indican "ilimitado".
+
+---
+
+### GET `/api/saas/organizations/:academyId/subscription`
+
+Obtener el estado de suscripcion de una academia especifica.
+
+**Auth:** Requiere pertenecer a la academia.
+
+**Respuesta exitosa (200):**
+
+```json
+{
+  "id": "uuid",
+  "organization_id": "uuid",
+  "plan_id": "uuid",
+  "status": "active",
+  "stripe_subscription_id": "sub_1Abc...",
+  "current_period_start": "2026-02-15T12:00:00Z",
+  "current_period_end": "2026-03-15T12:00:00Z",
+  "cancel_at_period_end": false,
+  "created_at": "2026-02-15T12:00:00Z",
+  "updated_at": "2026-02-15T12:00:00Z"
+}
+```
+
+**Sin suscripcion activa (404):**
+
+```json
+{ "message": "No active subscription found" }
+```
+
+---
+
+### POST `/api/saas/organizations/:academyId/checkout`
+
+Crear una **Stripe Checkout Session** para suscribirse a un plan. El backend genera la sesion de pago y devuelve la URL de Stripe a la que el frontend debe redirigir al usuario.
+
+**Auth:** Requiere pertenecer a la academia.
+
+**Body:**
+
+| Campo | Tipo | Requerido | Descripcion |
+|-------|------|-----------|-------------|
+| `planId` | string (uuid) | Si | UUID del plan seleccionado (`saas_plans.id`) |
+| `successUrl` | string (url) | No | URL de redireccion tras pago exitoso. Default: `STRIPE_SUCCESS_URL` del backend |
+| `cancelUrl` | string (url) | No | URL de redireccion si el usuario cancela. Default: `STRIPE_CANCEL_URL` del backend |
+
+**Ejemplo de Request:**
+
+```json
+{
+  "planId": "uuid-del-plan-elegido",
+  "successUrl": "https://miapp.com/subscription/success",
+  "cancelUrl": "https://miapp.com/subscription/cancel"
+}
+```
+
+**Respuesta exitosa (200):**
+
+```json
+{
+  "url": "https://checkout.stripe.com/c/pay/cs_test_..."
+}
+```
+
+> **Accion del Frontend:** Redirigir al usuario a la `url` recibida. Stripe maneja todo el formulario de pago (tarjeta, validacion, 3D Secure). Tras completar el pago, Stripe redirige al usuario a `successUrl`. El backend recibe un webhook automaticamente y crea la suscripcion en la base de datos.
+
+**Errores comunes:**
+
+| Codigo | Mensaje | Causa |
+|--------|---------|-------|
+| 404 | Plan not found or inactive | El `planId` no existe o el plan esta inactivo |
+| 409 | Organization already has an active subscription | La academia ya tiene una suscripcion activa |
+| 500 | Plan does not have an associated Stripe Price ID | El plan no tiene configurado el precio en Stripe |
+
+---
+
+### POST `/api/saas/organizations/:academyId/portal`
+
+Crear una sesion del **Stripe Customer Portal**. Permite al usuario gestionar su suscripcion: cambiar plan, actualizar metodo de pago, ver facturas, cancelar.
+
+**Auth:** Requiere pertenecer a la academia y tener una suscripcion activa.
+
+**Body:** Ninguno.
+
+**Respuesta exitosa (200):**
+
+```json
+{
+  "url": "https://billing.stripe.com/p/session/..."
+}
+```
+
+> **Accion del Frontend:** Redirigir al usuario a la `url`. Stripe maneja toda la interfaz de gestion. Al terminar, el usuario vuelve automaticamente a la app.
+
+**Error (404):** Si no tiene suscripcion activa.
+
+---
+
+### POST `/api/saas/organizations/:academyId/cancel`
+
+Cancelar la suscripcion activa. La cancelacion es **al final del periodo actual** (no inmediata), para que el usuario pueda seguir usando el servicio hasta que termine su mes pagado.
+
+**Auth:** Requiere pertenecer a la academia y tener una suscripcion activa.
+
+**Body:** Ninguno.
+
+**Respuesta exitosa (200):**
+
+```json
+{
+  "message": "Subscription will be canceled at the end of the current period"
+}
+```
+
+> Tras la cancelacion, el campo `cancel_at_period_end` del endpoint GET subscription sera `true`. Cuando expire el periodo, Stripe envia un webhook y la suscripcion pasa a `canceled`.
+
+**Error (404):** Si no tiene suscripcion activa.
+
+---
+
+### POST `/api/saas/webhooks/stripe`
+
+**(Uso interno)** Endpoint publico que recibe eventos de Stripe. Protegido mediante la firma `stripe-signature`. No debe ser llamado por el frontend.
+
+Eventos procesados:
+- `checkout.session.completed` — Crea la suscripcion en la base de datos.
+- `invoice.paid` — Renueva el periodo de la suscripcion.
+- `customer.subscription.updated` — Sincroniza cambios de estado.
+- `customer.subscription.deleted` — Marca la suscripcion como cancelada.
+
+---
+
+### Flujo completo de suscripcion
+
+```
+1. Frontend obtiene planes → GET /api/saas/plans
+2. Usuario elige plan → POST /api/saas/organizations/:id/checkout { planId }
+3. Frontend redirige a la URL de Stripe Checkout
+4. Usuario completa el pago en Stripe
+5. Stripe redirige al usuario a successUrl
+6. Stripe envia webhook al backend → suscripcion se guarda en BD
+7. Frontend verifica estado → GET /api/saas/organizations/:id/subscription
+```
+
+### Gestion posterior
+
+```
+- Ver suscripcion actual → GET /api/saas/organizations/:id/subscription
+- Gestionar (cambiar plan, facturacion) → POST /api/saas/organizations/:id/portal
+- Cancelar → POST /api/saas/organizations/:id/cancel
+```
 
 ---
 

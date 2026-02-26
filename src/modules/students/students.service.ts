@@ -56,6 +56,7 @@ export class StudentsService {
 
   /**
    * Crear un nuevo alumno.
+   * Genera automáticamente el código QR de acceso.
    */
   async create(organizationId: string, data: CreateStudentDTO) {
     const existing = await db
@@ -80,7 +81,28 @@ export class StudentsService {
       .returningAll()
       .executeTakeFirstOrThrow();
 
-    return student;
+    // Generar QR automáticamente
+    const qrData = JSON.stringify({
+      affiliationNumber: student.affiliation_number,
+      studentId: student.id,
+      organizationId,
+    });
+
+    const qrCodeDataUrl = await QRCode.toDataURL(qrData, {
+      width: 300,
+      margin: 2,
+      color: { dark: '#000000', light: '#FFFFFF' },
+    });
+
+    const updatedStudent = await db
+      .updateTable('student')
+      .set({ qr_code: qrCodeDataUrl, updated_at: new Date() })
+      .where('id', '=', student.id)
+      .where('organization_id', '=', organizationId)
+      .returningAll()
+      .executeTakeFirstOrThrow();
+
+    return updatedStudent;
   }
 
   /**
@@ -144,7 +166,9 @@ export class StudentsService {
       .select([
         'dance_group.id as group_id',
         'dance_group.name as group_name',
-        'dance_group.schedule',
+        'dance_group.schedule_days',
+        'dance_group.start_time',
+        'dance_group.end_time',
         'dance_group.is_active as group_active',
         'enrollment.enrolled_at',
         'enrollment.unenrolled_at',
