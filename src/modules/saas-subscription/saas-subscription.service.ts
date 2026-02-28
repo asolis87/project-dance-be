@@ -1,12 +1,18 @@
 import Stripe from 'stripe';
 import { db } from '../../lib/db';
+import { config } from '../../lib/config';
+import { withRetry } from '../../lib/retry';
+import { logger } from '../../lib/logger';
 import { NotFoundError, ConflictError } from '../../shared/helpers/errors';
 
 export class SaasSubscriptionService {
     private stripe: Stripe;
 
     constructor() {
-        this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '');
+        this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+            timeout: config.stripe.timeout,
+            maxNetworkRetries: config.stripe.maxRetries,
+        });
     }
 
     async listPlans() {
@@ -140,7 +146,7 @@ export class SaasSubscriptionService {
                         })
                         .execute();
 
-                    console.log(`[Stripe] Subscription created for org ${organization_id}`);
+                    logger.info({ organization_id }, 'Stripe: Subscription created');
                 }
                 break;
             }
@@ -164,7 +170,7 @@ export class SaasSubscriptionService {
                     .where('stripe_subscription_id', '=', stripeSubId)
                     .execute();
 
-                console.log(`[Stripe] Invoice paid for subscription ${stripeSubId}`);
+                logger.info({ stripeSubId }, 'Stripe: Invoice paid');
                 break;
             }
 
@@ -181,7 +187,7 @@ export class SaasSubscriptionService {
                     .where('stripe_subscription_id', '=', subscription.id)
                     .execute();
 
-                console.log(`[Stripe] Subscription ${subscription.id} updated to ${subscription.status}`);
+                logger.info({ subscriptionId: subscription.id, status: subscription.status }, 'Stripe: Subscription updated');
                 break;
             }
 
@@ -197,12 +203,12 @@ export class SaasSubscriptionService {
                     .where('stripe_subscription_id', '=', subscription.id)
                     .execute();
 
-                console.log(`[Stripe] Subscription ${subscription.id} canceled`);
+                logger.info({ subscriptionId: subscription.id }, 'Stripe: Subscription canceled');
                 break;
             }
 
             default:
-                console.log(`[Stripe] Unhandled event type: ${event.type}`);
+                logger.debug({ eventType: event.type }, 'Stripe: Unhandled event');
         }
     }
 

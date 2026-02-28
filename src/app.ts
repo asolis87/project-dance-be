@@ -1,6 +1,8 @@
 import fastify, { FastifyInstance } from 'fastify';
 import fastifyCors from '@fastify/cors';
 import fastifyRawBody from 'fastify-raw-body';
+import fastifyHelmet from '@fastify/helmet';
+import fastifyRateLimit from '@fastify/rate-limit';
 import FastifyBetterAuth from 'fastify-better-auth';
 import fp from 'fastify-plugin';
 import {
@@ -8,6 +10,9 @@ import {
   validatorCompiler,
 } from 'fastify-type-provider-zod';
 import { auth } from './lib/auth';
+import { checkHealth } from './lib/health';
+import { logger } from './lib/logger';
+import { getRequestId } from './shared/helpers/audit';
 import { authRoutes } from './modules/auth/auth.routes';
 import { instructorsRoutes } from './modules/instructors';
 import { studentsRoutes } from './modules/students';
@@ -20,7 +25,45 @@ import { AppError } from './shared/helpers/errors';
 import { initCronJobs } from './lib/cron';
 
 const buildApp = (): FastifyInstance => {
-  const app = fastify({ logger: true });
+  const isProduction = process.env.NODE_ENV === 'production';
+  
+  const app = fastify({
+    logger: isProduction ? logger : true,
+    requestIdHeader: 'x-request-id',
+    genReqId: () => crypto.randomUUID(),
+  });
+
+  // Request ID hook para logging
+  app.addHook('onRequest', async (request) => {
+    request.log.info({ 
+      url: request.url, 
+      method: request.method,
+    }, 'Incoming request');
+  });
+
+  // Hook de respuesta
+  app.addHook('onResponse', async (request, reply) => {
+    request.log.info({
+      url: request.url,
+      method: request.method,
+      statusCode: reply.statusCode,
+      responseTime: reply.elapsedTime,
+    }, 'Request completed');
+  });
+
+  // Security Headers
+  app.register(fastifyHelmet, {
+    contentSecurityPolicy: false,
+  });
+
+  // Rate Limiting global
+  app.register(fastifyRateLimit, {
+    max: Number(process.env.RATE_LIMIT_MAX) || 100,
+    timeWindow: '1 minute',
+    allowList: ['/health'],
+    keyGenerator: (request) => 
+      (request.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || request.ip,
+  });
 
   // Type provider de Zod para validación automática
   app.setValidatorCompiler(validatorCompiler);
@@ -97,6 +140,13 @@ const buildApp = (): FastifyInstance => {
   // Inicializar cron jobs (recordatorios de pago, etc.)
   app.addHook('onReady', () => {
     initCronJobs();
+  });
+
+  // Health check endpoint
+  app.get('/health', async (request, reply) => {
+    const health = await checkHealth();
+    const statusCode = health.status === 'ok' ? 200 : 503;
+    return reply.status(statusCode).send(health);
   });
 
   return app;

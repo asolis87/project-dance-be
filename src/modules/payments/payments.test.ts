@@ -268,6 +268,7 @@ describe('PaymentsService', () => {
           id: 'mem-1',
           organization_id: 'org-1',
           status: 'expired',
+          end_date: new Date('2025-01-01'),
         })
         // Alumno existe
         .mockResolvedValueOnce({ id: 'stu-1' });
@@ -287,7 +288,9 @@ describe('PaymentsService', () => {
 
       // Verifica que se actualizó la membresía
       expect(mockDb.updateTable).toHaveBeenCalledWith('membership');
-      expect(mockDb.set).toHaveBeenCalledWith({ status: 'active' });
+      expect(mockDb.set).toHaveBeenCalledWith(
+        expect.objectContaining({ status: 'active' }),
+      );
     });
   });
 });

@@ -126,6 +126,19 @@ export interface SaasSubscriptionTable {
   updated_at: Generated<Date>;
 }
 
+// ---------- Audit Log ----------
+export interface AuditLogTable {
+  id: Generated<string>;
+  action: string;
+  resource: string;
+  resource_id: string | null;
+  organization_id: string | null;
+  user_id: string | null;
+  request_id: string | null;
+  metadata: unknown; // jsonb
+  created_at: Generated<Date>;
+}
+
 // ---------- Database interface ----------
 export interface Database {
   instructor: InstructorTable;
@@ -138,4 +151,5 @@ export interface Database {
   payment_reminder: PaymentReminderTable;
   saas_plans: SaaSPlanTable;
   saas_subscriptions: SaasSubscriptionTable;
+  audit_log: AuditLogTable;
 }

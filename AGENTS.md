@@ -30,6 +30,10 @@ src/
 │   ├── auth.ts                  # Better-auth configuration
 │   ├── email.ts                 # Email service (Resend)
 │   ├── cron.ts                  # Cron job utilities
+│   ├── config.ts                # Configuration (timeouts, retries)
+│   ├── logger.ts                # Structured logging (Pino)
+│   ├── health.ts                # Health check endpoint
+│   ├── retry.ts                 # Retry utilities
 │   ├── auth-middleware.ts       # Authentication middleware
 │   └── academy-middleware.ts    # Academy isolation middleware
 │
@@ -45,14 +49,16 @@ src/
 ├── shared/
 │   ├── database/
 │   │   ├── types.ts             # Kysely table types
-│   │   └── migrations/          # Database migrations
+│   │   └── migrations/         # Database migrations
 │   ├── helpers/
 │   │   ├── errors.ts            # Custom error classes
-│   │   └── response.ts          # HTTP response helpers
+│   │   ├── response.ts          # HTTP response helpers
+│   │   └── audit.ts             # Audit logging
 │   └── schemas/
 │       └── pagination.schema.ts # Shared pagination schema
 │
-└── server.ts                    # Fastify app entry point
+├── app.ts                       # Fastify app builder
+└── server.ts                    # Entry point
 ```
 
 ---
@@ -174,6 +180,42 @@ vi.mock('../../lib/db', () => {
 4. **Pagination**: Always paginate list endpoints
 5. **Validation**: Validate all inputs with Zod schemas
 6. **DTOs**: Define input/output types in schema files
+7. **Timeouts**: Use config timeouts for external services (Stripe, Resend)
+8. **Retry**: Use `withRetry()` for external service calls
+
+---
+
+## Production Features
+
+### Health Check
+- `GET /health` - Returns `{ status, timestamp, checks }`
+- Verifies database connectivity
+
+### Security
+- **Helmet**: Security headers enabled
+- **Rate Limiting**: 100 req/min (configurable via `RATE_LIMIT_MAX`)
+
+### Graceful Shutdown
+- Handles SIGTERM/SIGINT
+- Closes DB connections cleanly
+
+### Error Handling
+- Uncaught exceptions logged and exit with code 1
+- Global error handler with consistent error response format
+
+### Structured Logging
+- Production: JSON format via Pino
+- Development: Pretty format
+- Request/Response hooks with timing
+
+### Audit Log
+- Table `audit_log` for tracking sensitive actions
+- Use `logAudit()` from `src/shared/helpers/audit.ts`
+
+### External Services
+- Stripe: Configurable timeout + retries
+- Resend: Configurable timeout + retries
+- See `src/lib/config.ts` for configuration
 
 ---
 

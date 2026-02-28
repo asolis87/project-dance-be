@@ -130,7 +130,11 @@ describe('StudentsService', () => {
         created_at: new Date(),
         updated_at: new Date(),
       };
-      mockDb.executeTakeFirstOrThrow.mockResolvedValueOnce(created);
+
+      // First call: insert, Second call: update with QR
+      mockDb.executeTakeFirstOrThrow
+        .mockResolvedValueOnce(created)
+        .mockResolvedValueOnce({ ...created, qr_code: 'data:image/png;base64,mock' });
 
       const result = await service.create('org-1', {
         name: 'Ana López',

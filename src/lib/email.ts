@@ -1,4 +1,7 @@
 import { Resend } from 'resend';
+import { config } from './config';
+import { withTimeout, withRetry } from './retry';
+import { logger } from './logger';
 
 /**
  * Instancia de Resend.
@@ -26,21 +29,16 @@ interface SendEmailParams {
 }
 
 /**
- * Envía un email usando Resend.
+ * Envía un email usando Resend con timeout y retry.
  * En desarrollo sin API key, hace fallback a console.log.
  */
 export async function sendEmail({ to, subject, html, attachments }: SendEmailParams) {
   if (!resend) {
-    console.log(`[DEV] Email para ${to}`);
-    console.log(`  Asunto: ${subject}`);
-    console.log(`  Contenido: ${html}`);
-    if (attachments?.length) {
-      console.log(`  Adjuntos: ${attachments.map((a) => a.filename).join(', ')}`);
-    }
+    logger.debug({ to, subject }, '[DEV] Email simulate');
     return;
   }
 
-  try {
+  const sendFn = async () => {
     const { error } = await resend.emails.send({
       from: EMAIL_FROM,
       to,
@@ -50,9 +48,23 @@ export async function sendEmail({ to, subject, html, attachments }: SendEmailPar
     });
 
     if (error) {
-      console.error('[EMAIL] Error al enviar email:', error);
+      throw new Error(JSON.stringify(error));
     }
+  };
+
+  try {
+    await withTimeout(
+      withRetry(sendFn, {
+        maxRetries: config.resend.maxRetries,
+        delayMs: 1000,
+        onRetry: (err, attempt) => {
+          logger.warn({ err, attempt }, 'Retry sending email');
+        },
+      }),
+      config.resend.timeout,
+      'Email send timed out',
+    );
   } catch (err) {
-    console.error('[EMAIL] Error inesperado al enviar email:', err);
+    logger.error({ err, to, subject }, 'Failed to send email after retries');
   }
 }
