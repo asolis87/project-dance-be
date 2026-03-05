@@ -1,13 +1,9 @@
 import 'dotenv/config';
 import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
 import { promises as fs } from 'node:fs';
 import { Kysely, Migrator, PostgresDialect } from 'kysely';
 import type { Migration, MigrationProvider } from 'kysely';
 import { Pool } from 'pg';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 class ESMFileMigrationProvider implements MigrationProvider {
   private migrationFolder: string;
@@ -24,7 +20,7 @@ class ESMFileMigrationProvider implements MigrationProvider {
       if (!fileName.endsWith('.js') && !fileName.endsWith('.ts')) continue;
 
       const filePath = path.join(this.migrationFolder, fileName);
-      const migration = await import(pathToFileURL(filePath).href);
+      const migration = await import(filePath);
 
       const migrationKey = fileName.replace(/\.(js|ts)$/, '');
       migrations[migrationKey] = migration;

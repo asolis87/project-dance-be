@@ -2,7 +2,6 @@
   "name": "project-dance",
   "version": "0.1.0",
   "description": "SaaS para gestión de academias de baile",
-  "type": "module",
   "main": "index.js",
   "scripts": {
     "build": "tsc",
