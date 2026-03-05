@@ -119,7 +119,7 @@ const buildApp = (): FastifyInstance => {
   // Better Auth - registra automáticamente las rutas /api/auth/*
   app.register(
     fp(async (instance) => {
-      await instance.register(FastifyBetterAuth, { auth });
+      await instance.register(FastifyBetterAuth, { auth: auth as any });
     }),
   );
 
