@@ -49,13 +49,32 @@ export class SaasSubscriptionService {
             throw new NotFoundError('Plan not found or inactive');
         }
 
-        if (!plan.stripe_price_id) {
-            throw new Error('Plan does not have an associated Stripe Price ID');
-        }
-
         const existingSub = await this.getSubscription(organizationId);
         if (existingSub) {
             throw new ConflictError('Organization already has an active subscription');
+        }
+
+        // Plan gratuito: se activa directamente sin pasar por Stripe
+        if (parseFloat(plan.price) === 0) {
+            await db
+                .insertInto('saas_subscriptions')
+                .values({
+                    organization_id: organizationId,
+                    plan_id: plan.id,
+                    status: 'active',
+                    stripe_subscription_id: null,
+                    current_period_start: new Date(),
+                    current_period_end: null,
+                    cancel_at_period_end: false,
+                })
+                .execute();
+
+            logger.info({ organizationId, planId: plan.id }, 'Free plan activated directly');
+            return { url: null };
+        }
+
+        if (!plan.stripe_price_id) {
+            throw new Error('Plan does not have an associated Stripe Price ID');
         }
 
         const session = await this.stripe.checkout.sessions.create({
@@ -98,8 +117,19 @@ export class SaasSubscriptionService {
 
     async cancelSubscription(organizationId: string) {
         const subscription = await this.getSubscription(organizationId);
-        if (!subscription || !subscription.stripe_subscription_id) {
+        if (!subscription) {
             throw new NotFoundError('No active subscription found');
+        }
+
+        // Suscripción sin Stripe (ej: plan gratuito o asignación manual) — cancelar directo en DB
+        if (!subscription.stripe_subscription_id) {
+            await db
+                .updateTable('saas_subscriptions')
+                .set({ status: 'canceled', updated_at: new Date() })
+                .where('id', '=', subscription.id)
+                .execute();
+
+            return { message: 'Subscription canceled' };
         }
 
         await this.stripe.subscriptions.update(subscription.stripe_subscription_id, {
